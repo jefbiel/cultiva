@@ -63,7 +63,11 @@ test.describe('Cultiva web', () => {
   test('enquadra o app no desktop e preenche telas mobile sem rolagem horizontal', async ({ browser }) => {
     for (const viewport of [
       { width: 1280, height: 800, mobile: false },
+      { width: 1440, height: 1100, mobile: false },
       { width: 1148, height: 650, mobile: false },
+      { width: 600, height: 800, mobile: false },
+      { width: 428, height: 926, mobile: true },
+      { width: 320, height: 568, mobile: true },
       { width: 390, height: 844, mobile: true },
       { width: 360, height: 640, mobile: true },
       { width: 844, height: 390, mobile: true },
@@ -76,11 +80,22 @@ test.describe('Cultiva web', () => {
       const page = await context.newPage();
       await page.goto('http://127.0.0.1:8081/');
       await expect(page.getByText('Escolha seu perfil')).toBeVisible();
+      const scale = Math.min(1, (viewport.width - 48) / 444, (viewport.height - 48) / 942);
+      await expect.poll(async () => (await page.locator('#root').boundingBox())!.width)
+        .toBeCloseTo(viewport.mobile ? viewport.width : 444 * scale, 1);
       const frame = await page.locator('#root').boundingBox();
       expect(frame).not.toBeNull();
-      expect(frame!.width).toBe(viewport.mobile ? viewport.width : 430);
-      expect(frame!.height).toBe(viewport.mobile ? viewport.height : viewport.height - 48);
-      expect(frame!.x).toBe(viewport.mobile ? 0 : (viewport.width - 430) / 2);
+      expect(frame!.height).toBeCloseTo(viewport.mobile ? viewport.height : 942 * scale, 1);
+      expect(frame!.x).toBeCloseTo(viewport.mobile ? 0 : (viewport.width - 444 * scale) / 2, 1);
+      const metrics = await page.locator('#root').evaluate((element) => {
+        const style = getComputedStyle(element);
+        return { border: style.borderTopWidth, width: element.clientWidth, height: element.clientHeight };
+      });
+      expect(metrics.border).toBe(viewport.mobile ? '0px' : '8px');
+      if (!viewport.mobile) {
+        expect(metrics.width).toBe(428);
+        expect(metrics.height).toBe(926);
+      }
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(viewport.width);
       await page.screenshot({ path: `test-results/login-${viewport.width}x${viewport.height}.png` });
       await page.getByRole('button', { name: 'Criar cadastro' }).click();

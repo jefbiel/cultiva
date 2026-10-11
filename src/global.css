@@ -61,20 +61,30 @@ body > div:not(#root):has([aria-modal='true']) {
   z-index: 9999;
 }
 
-@media (min-width: 768px) and (pointer: fine) {
+@media (hover: hover) and (pointer: fine) {
   :root {
-    --app-width: min(430px, calc(100vw - 48px));
-    --app-height: min(860px, calc(100dvh - 48px));
+    /* 428 x 926 logical pixels, plus an 8px bezel on each side. */
+    --app-width: 444px;
+    --app-height: 942px;
     --app-border: 8px;
     --app-radius: 36px;
   }
 
   #root {
+    transform: scale(var(--phone-scale, 1));
     box-shadow: 0 24px 64px #18332226, 0 4px 12px #1833221a;
+  }
+
+  body > div:not(#root):has([aria-modal='true']) {
+    inset: auto;
+    left: 50%;
+    top: 50%;
+    margin: 0;
+    transform: translate(-50%, -50%) scale(var(--phone-scale, 1));
   }
 }
 
-@media (max-width: 767px), (pointer: coarse) {
+@media (hover: none), (pointer: coarse) {
   #root {
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
