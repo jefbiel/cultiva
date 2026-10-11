@@ -134,11 +134,11 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexGrow: 1,
-    minHeight: Platform.OS === 'web' ? 150 : 330,
+    minHeight: Platform.OS === 'web' ? 280 : 330,
   },
   loginLogo: {
     width: '100%',
-    height: Platform.OS === 'web' ? 150 : 330,
+    height: Platform.OS === 'web' ? 280 : 330,
   },
   loginFormCard: {
     padding: 16,
