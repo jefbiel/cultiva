@@ -41,7 +41,7 @@ export const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     width: '100%',
-    maxWidth: Platform.select({ web: 430, default: 820 }) ?? 820,
+    maxWidth: Platform.OS === 'web' ? '100%' : 820,
     alignSelf: 'center',
     paddingHorizontal: 20,
     paddingVertical: 24,
@@ -49,15 +49,15 @@ export const styles = StyleSheet.create({
   },
   loginSafeArea: {
     justifyContent: 'space-between',
-    paddingHorizontal: 28,
-    paddingTop: 36,
+    paddingHorizontal: Platform.OS === 'web' ? 20 : 28,
+    paddingTop: Platform.OS === 'web' ? 20 : 36,
     paddingBottom: 18,
-    gap: 28,
+    gap: Platform.OS === 'web' ? 16 : 28,
   },
   onboardingSafeArea: {
     flex: 1,
     width: '100%',
-    maxWidth: Platform.select({ web: 430, default: 820 }) ?? 820,
+    maxWidth: Platform.OS === 'web' ? '100%' : 820,
     alignSelf: 'center',
     padding: 12,
     backgroundColor: palette.background,
@@ -109,7 +109,7 @@ export const styles = StyleSheet.create({
   appShell: {
     flex: 1,
     width: '100%',
-    maxWidth: Platform.select({ web: 430, default: 820 }) ?? 820,
+    maxWidth: Platform.OS === 'web' ? '100%' : 820,
     alignSelf: 'center',
     backgroundColor: palette.background,
   },
@@ -134,11 +134,11 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexGrow: 1,
-    minHeight: 330,
+    minHeight: Platform.OS === 'web' ? 150 : 330,
   },
   loginLogo: {
     width: '100%',
-    height: 330,
+    height: Platform.OS === 'web' ? 150 : 330,
   },
   loginFormCard: {
     padding: 16,

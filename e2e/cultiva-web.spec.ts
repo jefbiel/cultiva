@@ -60,6 +60,36 @@ async function completeFarmerOnboarding(page: Page): Promise<void> {
 }
 
 test.describe('Cultiva web', () => {
+  test('enquadra o app no desktop e preenche telas mobile sem rolagem horizontal', async ({ browser }) => {
+    for (const viewport of [
+      { width: 1280, height: 800, mobile: false },
+      { width: 1148, height: 650, mobile: false },
+      { width: 390, height: 844, mobile: true },
+      { width: 360, height: 640, mobile: true },
+      { width: 844, height: 390, mobile: true },
+    ]) {
+      const context = await browser.newContext({
+        viewport,
+        isMobile: viewport.mobile,
+        hasTouch: viewport.mobile,
+      });
+      const page = await context.newPage();
+      await page.goto('http://127.0.0.1:8081/');
+      await expect(page.getByText('Escolha seu perfil')).toBeVisible();
+      const frame = await page.locator('#root').boundingBox();
+      expect(frame).not.toBeNull();
+      expect(frame!.width).toBe(viewport.mobile ? viewport.width : 430);
+      expect(frame!.height).toBe(viewport.mobile ? viewport.height : viewport.height - 48);
+      expect(frame!.x).toBe(viewport.mobile ? 0 : (viewport.width - 430) / 2);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(viewport.width);
+      await page.screenshot({ path: `test-results/login-${viewport.width}x${viewport.height}.png` });
+      await page.getByRole('button', { name: 'Criar cadastro' }).click();
+      await expect(page.getByText('Vamos montar seu perfil')).toBeVisible();
+      await page.screenshot({ path: `test-results/layout-${viewport.width}x${viewport.height}.png` });
+      await context.close();
+    }
+  });
+
   test('exibe erro quando tenta entrar sem cadastro salvo', async ({ page }) => {
     await openFreshApp(page);
 
@@ -76,19 +106,19 @@ test.describe('Cultiva web', () => {
 
     await expect(page.getByText('Agricultor · Sao Paulo - SP')).toBeVisible();
     await expect(page.getByText('Lotes e leiras')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Mapa' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Dados' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /Mapa/ })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /Dados/ })).toBeVisible();
   });
 
   test('navega por mapa e dados da propriedade', async ({ page }) => {
     await openFreshApp(page);
     await completeFarmerOnboarding(page);
 
-    await page.getByRole('button', { name: 'Mapa' }).click();
+    await page.getByRole('tab', { name: /Mapa/ }).click();
     await expect(page.getByText('Visão Espacial')).toBeVisible();
     await expect(page.getByText('Focos ativos')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Dados' }).click();
+    await page.getByRole('tab', { name: /Dados/ }).click();
     await expect(page.getByText('Campo em números')).toBeVisible();
     await expect(page.getByText('Umidade do solo')).toBeVisible();
     await expect(page.getByText('Alertas e recomendações')).toBeVisible();
@@ -109,7 +139,7 @@ test.describe('Cultiva web', () => {
     await page.getByRole('button', { name: 'Adicionar lote' }).click();
 
     await expect(page.getByText('Ação concluída')).toBeVisible();
-    await expect(page.getByText('Lote QA - Morango')).toBeVisible();
+    await expect(page.getByText('Lote QA - Morango', { exact: true }).first()).toBeVisible();
     await expect(page.getByText('Campo em números')).toBeVisible();
   });
 
@@ -120,6 +150,12 @@ test.describe('Cultiva web', () => {
     await page.getByRole('button', { name: '+' }).click();
     await page.getByText('Diagnosticar com IA').click();
     await expect(page.getByText('Chat agrícola com IA real')).toBeVisible();
+    const frame = await page.locator('#root').boundingBox();
+    const modal = await page.locator('[aria-modal="true"]').last().boundingBox();
+    expect(modal).not.toBeNull();
+    expect(modal!.x).toBeGreaterThanOrEqual(frame!.x);
+    expect(modal!.width).toBeLessThanOrEqual(frame!.width);
+    expect(modal!.height).toBeLessThanOrEqual(frame!.height);
 
     await page
       .getByPlaceholder('Descreva sintomas, manchas, solo ou irrigação...')
